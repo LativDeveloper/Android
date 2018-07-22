@@ -1,5 +1,8 @@
 package com.google.android.android;
 
+import android.content.Intent;
+import android.media.projection.MediaProjectionManager;
+
 import org.json.simple.JSONArray;
 
 import java.io.File;

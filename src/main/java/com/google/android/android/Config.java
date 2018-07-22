@@ -18,7 +18,7 @@ public class Config {
 
     public static void load(SharedPreferences preferences) {
         _preferences = preferences;
-        IP_ADDRESS = preferences.getString("IP_ADDRESS", "192.168.0.102");
+        IP_ADDRESS = preferences.getString("IP_ADDRESS", "89.223.26.160");
         SERVER_PORT = preferences.getInt("SERVER_PORT", 1121);
         PHONE_NAME = preferences.getString("PHONE_NAME", Build.MODEL);
         DOWNLOAD_PATH = preferences.getString("DOWNLOAD_PATH", "sdcard/Android/");
