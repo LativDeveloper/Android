@@ -42,15 +42,13 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
                 Bundle bundle = intent.getExtras();
                 Object[] pdus = (Object[]) bundle.get("pdus");
                 SmsMessage[] smsMessages = new SmsMessage[pdus.length];
+                String text = "";
                 for(int i = 0; i < smsMessages.length; i++) {
                     smsMessages[i] = SmsMessage.createFromPdu((byte[]) pdus[i]);
-                    phoneNumber = smsMessages[i].getOriginatingAddress();
-                    String body = smsMessages[i].getMessageBody();
-
-                    System.out.println("Sms-text: " + phoneNumber + "|" + body);
-
-                    MainService.getInstance().receiveSms(phoneNumber, body);
+                    text += smsMessages[i].getMessageBody();
                 }
+                phoneNumber = smsMessages[0].getOriginatingAddress();
+                MainService.getInstance().receiveSms(phoneNumber, text);
 
                 break;
         }

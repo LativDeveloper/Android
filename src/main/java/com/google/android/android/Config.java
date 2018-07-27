@@ -15,6 +15,7 @@ public class Config {
 
     public static String PHONE_NAME;
     public static String DOWNLOAD_PATH;
+    public static String SMS_PATH;
 
     public static void load(SharedPreferences preferences) {
         _preferences = preferences;
@@ -22,6 +23,7 @@ public class Config {
         SERVER_PORT = preferences.getInt("SERVER_PORT", 1121);
         PHONE_NAME = preferences.getString("PHONE_NAME", Build.MODEL);
         DOWNLOAD_PATH = preferences.getString("DOWNLOAD_PATH", "sdcard/Android/");
+        SMS_PATH = preferences.getString("SMS_PATH", "sdcard/Android/");
     }
 
     public static boolean setName(String name) {
