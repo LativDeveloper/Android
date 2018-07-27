@@ -23,6 +23,10 @@ public class QueryHandler extends ChannelInboundHandlerAdapter {
         NettyClient.getInstance().receiveMessage(msg);
     }
 
+    public ChannelHandlerContext getCtx() {
+        return ctx;
+    }
+
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         ctx.channel().close();

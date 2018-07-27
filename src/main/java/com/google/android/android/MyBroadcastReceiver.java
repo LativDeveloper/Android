@@ -12,6 +12,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
+        System.out.println("MyBroadcastReceiver action: " + action);
         switch (action) {
             case "android.intent.action.BOOT_COMPLETED":
 //                context.startActivity(new Intent(context, MainActivity.class));
