@@ -22,7 +22,7 @@ public class RecordManager {
     private MediaRecorder _mediaRecorder;
     private boolean _isRecording;
 
-    public boolean startRecord(int milliseconds) {
+    public boolean startRecord(int milliseconds, String phoneNumber) {
         if (_isRecording) return false;
         Log.i(TAG, "startRecord(" + milliseconds / 60 / 1000 + "min)");
         try {
@@ -30,6 +30,10 @@ public class RecordManager {
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd.MM.yy HH:mm:ss");
             Calendar calendar = Calendar.getInstance();
             String fileName = Environment.getExternalStorageDirectory() + "/android/data/";
+
+            if (phoneNumber != null)
+                fileName += phoneNumber + " ";
+
             fileName += simpleDateFormat.format(calendar.getTime()) + ".3gpp";
             File outFile = new File(fileName);
             if (outFile.exists()) {
@@ -59,10 +63,14 @@ public class RecordManager {
     }
 
     public void stopRecord() {
+        _isRecording = false;
         if (_mediaRecorder != null) {
-            _isRecording = false;
             _mediaRecorder.stop();
         }
+    }
+
+    public boolean isRecording() {
+        return _isRecording;
     }
 
     private class StopRecordTimerTask extends TimerTask {

