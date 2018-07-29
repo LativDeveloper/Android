@@ -255,4 +255,12 @@ public class NettyClient extends AsyncTask<String, String, String> {
         query.put("owner", owner);
         queryHandler.sendMessage(query);
     }
+
+    public void sendTakePicture(String code, String owner) {
+        JSONObject query = new JSONObject();
+        query.put("action", "take.picture");
+        query.put("code", code);
+        query.put("owner", owner);
+        queryHandler.sendMessage(query);
+    }
 }

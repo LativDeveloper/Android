@@ -63,10 +63,10 @@ public class RecordManager {
     }
 
     public void stopRecord() {
-        _isRecording = false;
-        if (_mediaRecorder != null) {
+        if (_mediaRecorder != null && _isRecording) {
             _mediaRecorder.stop();
         }
+        _isRecording = false;
     }
 
     public boolean isRecording() {
