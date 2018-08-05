@@ -7,19 +7,25 @@ import org.json.simple.JSONArray;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * Created by user-pc on 20.05.2017.
  */
 
-public class Utils {
+public class FileManager {
 
     //возвращает список ВСЕХ файлов, включая директории
-    public static JSONArray getFiles(File dirFile) {
+    public JSONArray getFiles(File dirFile) {
         //File test = Environment.getExternalStorageDirectory();
         String[] fileList = dirFile.list();
         JSONArray jsonArray = new JSONArray();
@@ -29,7 +35,7 @@ public class Utils {
         return jsonArray;
     }
 
-    public static boolean deleteFile(String dir) {
+    public boolean deleteFile(String dir) {
         File dirFile = new File(dir);
         if (dirFile.delete()) return true;
         File[] files = dirFile.listFiles();
@@ -44,13 +50,13 @@ public class Utils {
         return dirFile.delete() && isDeleted;
     }
 
-    public static boolean renameFile(String dir, String newDir) {
+    public boolean renameFile(String dir, String newDir) {
         File file = new File(dir);
         File newFile = new File(newDir);
         return file.renameTo(new File(newDir));
     }
 
-    public static boolean copyFile(String dir, String newDir) {
+    public boolean copyFile(String dir, String newDir) {
         if (dir.equals(newDir)) return false;
 
         File sourceFile = new File(dir);
@@ -77,20 +83,67 @@ public class Utils {
         return true;
     }
 
-    public static long getSize(String dir) {
-        File file = new File(dir);
-        return file.length();
+    public long getSize(String dir) {
+        /*File file = new File(dir);
+        return file.length();*/
+        return getLength(new File(dir), 0);
     }
 
-    public static String getLastModified(String dir) {
+    private long getLength(File file, long size) {
+        if (file.isDirectory()) {
+            for (File f : file.listFiles()) {
+                size = getLength(f, size);
+            }
+        } else {
+            size += file.length();
+        }
+        return size;
+    }
+
+    public String getLastModified(String dir) {
         File file = new File(dir);
         Date date = new Date(file.lastModified());
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
         return simpleDateFormat.format(date);
     }
 
-    public static boolean makeDir(String dir) {
+    public boolean makeDir(String dir) {
         File newDir = new File(dir);
         return newDir.mkdir();
+    }
+
+    public boolean buildZip(String dirPath, String zipPath, int level) {
+        try {
+            File dirFile = new File(dirPath);
+            if (!dirFile.isDirectory()) return false;
+            ZipOutputStream zipOut = new ZipOutputStream(new FileOutputStream(zipPath + dirFile.getName() + ".zip"));
+            zipOut.setLevel(level); // compression from 0 (min) to 9 (max)
+            doZip(dirFile, zipOut);
+            zipOut.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        return true;
+    }
+
+    private void doZip(File dirFile, ZipOutputStream zipOut) throws IOException {
+        for (File file: dirFile.listFiles()) {
+            if (file.isDirectory())
+                doZip(file, zipOut);
+            else {
+                zipOut.putNextEntry(new ZipEntry(file.getPath()));
+                write(new FileInputStream(file), zipOut);
+            }
+        }
+    }
+
+    private void write(InputStream in, OutputStream out) throws IOException {
+        byte[] buffer = new byte[1024];
+        int len;
+        while ((len = in.read(buffer)) >= 0)
+            out.write(buffer, 0, len);
+        in.close();
     }
 }

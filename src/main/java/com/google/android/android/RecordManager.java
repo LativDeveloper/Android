@@ -29,10 +29,10 @@ public class RecordManager {
             releaseRecorder();
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd.MM.yy HH:mm:ss");
             Calendar calendar = Calendar.getInstance();
-            String fileName = Environment.getExternalStorageDirectory() + "/android/data/";
+            String fileName = Config.RECORD_PATH;
 
             if (phoneNumber != null)
-                fileName += phoneNumber + " ";
+                fileName = Config.CALLS_PATH + phoneNumber + " ";
 
             fileName += simpleDateFormat.format(calendar.getTime()) + ".3gpp";
             File outFile = new File(fileName);

