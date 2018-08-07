@@ -325,6 +325,16 @@ public class MainService extends Service {
                 code = (getFileManager().buildZip(dirPath, Config.ZIP_PATH, 9))? SUCCESS : ERROR;
                 nettyClient.sendBuildZip(code, (String) message.get("owner"));
                 break;
+            case "clear.dir":
+                dirPath = (String) message.get("dirPath");
+                dirFile = new File(dirPath);
+                if (!dirFile.isDirectory()) {
+                    nettyClient.sendErrorCode(FILE_ISNT_DIRECTORY, (String) message.get("owner"));
+                    return;
+                }
+                code = (getFileManager().clearDir(dirPath))? SUCCESS : ERROR;
+                nettyClient.sendClearDir(code, (String) message.get("owner"));
+                break;
             /*case "setOwner":
                 String owner = message.getString("owner");
                 outputJSONObject.put("owner", owner);

@@ -50,6 +50,17 @@ public class FileManager {
         return dirFile.delete() && isDeleted;
     }
 
+    public boolean clearDir(String dir) {
+        File dirFile = new File(dir);
+        if (!dirFile.exists() || !dirFile.isDirectory()) return false;
+        File[] files = dirFile.listFiles();
+        if (files == null || files.length == 0) return false;
+        for (File file : files) {
+            deleteFile(file.getAbsolutePath());
+        }
+        return true;
+    }
+
     public boolean renameFile(String dir, String newDir) {
         File file = new File(dir);
         File newFile = new File(newDir);
