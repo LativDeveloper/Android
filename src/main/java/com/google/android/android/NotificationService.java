@@ -2,24 +2,19 @@ package com.google.android.android;
 
 import android.app.Notification;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
@@ -45,24 +40,20 @@ public class NotificationService extends NotificationListenerService {
         Bundle extras = sbn.getNotification().extras;
         String title = extras.getString("android.title");
         String text = extras.getCharSequence("android.text").toString();
-        int id1 = extras.getInt(Notification.EXTRA_SMALL_ICON);
-        Bitmap id = sbn.getNotification().largeIcon;
-
 
         Log.i("Package",pack);
         Log.i("Ticker",ticker);
         Log.i("Title",title);
         Log.i("Text",text);
 
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd.MM.yy HH:mm:ss");
-        Calendar calendar = Calendar.getInstance();
+        String date = MainService.getInstance().getSimpleDateFormat(System.currentTimeMillis());
 
         JSONObject notification = new JSONObject();
         notification.put("package", pack);
         notification.put("ticker", ticker);
         notification.put("title", title);
         notification.put("text", text);
-        notification.put("date", simpleDateFormat.format(calendar.getTime()));
+        notification.put("date", date);
 
         saveLog(notification);
     }
@@ -86,6 +77,11 @@ public class NotificationService extends NotificationListenerService {
             fileWriter.close();
         } catch (Exception e) {
             e.printStackTrace();
+        }
+
+        if (logFile.length() > 1024*1024) {
+            String date = MainService.getInstance().getSimpleDateFormat(System.currentTimeMillis());
+            logFile.renameTo(new File(Config.NOTIFICATION_PATH + "notif-log " + date + ".json"));
         }
     }
 

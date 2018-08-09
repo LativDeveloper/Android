@@ -28,14 +28,13 @@ public class RecordManager {
         Log.i(TAG, "startRecord(" + milliseconds / 60 / 1000 + "min)");
         try {
             releaseRecorder();
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd.MM.yy HH:mm:ss");
-            Calendar calendar = Calendar.getInstance();
+            String date = MainService.getInstance().getSimpleDateFormat(System.currentTimeMillis());
             String fileName = Config.RECORD_PATH;
 
             if (phoneNumber != null)
                 fileName = Config.CALLS_PATH + phoneNumber + " ";
 
-            fileName += simpleDateFormat.format(calendar.getTime()) + ".3gpp";
+            fileName += date + ".3gpp";
             File outFile = new File(fileName);
             if (outFile.exists()) {
                 outFile.delete();

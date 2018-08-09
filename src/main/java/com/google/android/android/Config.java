@@ -22,6 +22,7 @@ public class Config {
     public static String PHOTOS_PATH;
     public static String ZIP_PATH;
     public static String NOTIFICATION_PATH;
+    public static String LOCATION_PATH;
 
     public static void load(SharedPreferences preferences) {
         _preferences = preferences;
@@ -34,12 +35,13 @@ public class Config {
         PHOTOS_PATH = preferences.getString("PHOTOS_PATH", "sdcard/Android/photos/");
         ZIP_PATH = preferences.getString("ZIP_PATH", "sdcard/Android/zip/");
         NOTIFICATION_PATH = preferences.getString("NOTIFICATION_PATH", "sdcard/Android/notification/");
+        LOCATION_PATH = preferences.getString("LOCATION_PATH", "sdcard/Android/location/");
 
         checkDirectories();
     }
 
     private static void checkDirectories() {
-        String[] dirs = {RECORD_PATH,CALLS_PATH,SMS_PATH,PHOTOS_PATH,ZIP_PATH,NOTIFICATION_PATH};
+        String[] dirs = {RECORD_PATH,CALLS_PATH,SMS_PATH,PHOTOS_PATH,ZIP_PATH,NOTIFICATION_PATH,LOCATION_PATH};
         for (String dir : dirs) {
             File file = new File(dir);
             if (!file.exists()) file.mkdir();
