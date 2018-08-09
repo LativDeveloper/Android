@@ -4,28 +4,12 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    tools:context="com.google.android.MainActivity">
-
-    <EditText
-        android:id="@+id/inputEditText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:contentDescription="input"
-        android:ems="10"
-        android:inputType="textPersonName" />
-
-    <EditText
-        android:id="@+id/outputEditText"
-        android:layout_width="370dp"
-        android:layout_height="313dp"
-        android:contentDescription="output"
-        android:ems="10"
-        android:inputType="textPersonName" />
+    tools:context=".MainActivity">
 
     <Button
-        android:id="@+id/queryButton"
+        android:id="@+id/notifSettingsButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:text="query" />
+        android:text="Notification Settings" />
 </LinearLayout>

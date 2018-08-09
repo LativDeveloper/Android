@@ -21,6 +21,7 @@ public class RecordManager {
 
     private MediaRecorder _mediaRecorder;
     private boolean _isRecording;
+    private long _endTime;
 
     public boolean startRecord(int milliseconds, String phoneNumber) {
         if (_isRecording) return false;
@@ -50,6 +51,7 @@ public class RecordManager {
             _mediaRecorder.start();
 
             _isRecording = true;
+            _endTime = System.currentTimeMillis() + milliseconds;
 
             if (milliseconds != 0) {
                 setTimerForStopRecord(milliseconds);
@@ -58,6 +60,7 @@ public class RecordManager {
             return true;
         } catch (Exception e) {
             _isRecording = false;
+            _endTime = 0;
             return false;
         }
     }
@@ -67,10 +70,15 @@ public class RecordManager {
             _mediaRecorder.stop();
         }
         _isRecording = false;
+        _endTime = 0;
     }
 
     public boolean isRecording() {
         return _isRecording;
+    }
+
+    public long getEndTime() {
+        return _endTime;
     }
 
     private class StopRecordTimerTask extends TimerTask {
