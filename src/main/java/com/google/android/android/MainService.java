@@ -1,6 +1,8 @@
 package com.google.android.android;
 
+import android.app.ActivityManager;
 import android.app.Service;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -10,6 +12,7 @@ import android.os.BatteryManager;
 import android.os.Build;
 import android.os.IBinder;
 import android.telephony.SmsManager;
+import android.util.Log;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -20,6 +23,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 

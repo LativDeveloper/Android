@@ -1,12 +1,15 @@
 package com.google.android.android;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -36,14 +39,18 @@ public class MyLocationManager {
         return locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
     }
 
-    @SuppressLint("MissingPermission")
+    public boolean isAccessLocationPermission() {
+        return ActivityCompat.checkSelfPermission(MainService.getInstance(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+    }
+
     public boolean startGpsLocationUpdate() {
+       if (!isAccessLocationPermission()) return false;
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, updateTime, 10, locationListener);
         return isGpsEnabled();
     }
 
-    @SuppressLint("MissingPermission")
     public boolean startNetworkLocationUpdate() {
+        if (!isAccessLocationPermission()) return false;
         locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, updateTime,10,locationListener);
         return isNetworkEnabled();
     }
@@ -63,7 +70,7 @@ public class MyLocationManager {
         @Override
         public void onProviderEnabled(String provider) {
             System.out.println("Provider enabled: " + provider);
-            @SuppressLint("MissingPermission")
+            if (!isAccessLocationPermission()) return;
             Location location = locationManager.getLastKnownLocation(provider);
             if (location != null)
                 saveLog(convertLocationToJSONObject(location));

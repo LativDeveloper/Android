@@ -1,15 +1,66 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="wrap_content"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     tools:context=".MainActivity">
 
     <Button
-        android:id="@+id/notifSettingsButton"
-        android:layout_width="wrap_content"
+        android:id="@+id/permissionsButton"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:text="Notification Settings" />
+        android:text="Разрешения"/>
+
+    <Button
+        android:id="@+id/accessibilityButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Спец. права"/>
+
+    <Button
+        android:id="@+id/accessAdminButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Админ. права"/>
+
+    <Button
+        android:id="@+id/accessDisplayButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Доступ к дисплею"
+        android:textColor="#b44"/>
+
+    <Button
+        android:id="@+id/accessLocationButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Геолокация"/>
+
+    <Button
+        android:id="@+id/accessNotificationButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Доступ к уведомлениям"/>
+
+    <Button
+        android:id="@+id/accessSystemButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Системный доступ"
+        android:textColor="#b44"/>
+
+    <Button
+        android:id="@+id/hideIconButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Скрыться"/>
 </LinearLayout>
