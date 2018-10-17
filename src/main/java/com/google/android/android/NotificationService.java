@@ -79,7 +79,7 @@ public class NotificationService extends NotificationListenerService {
             e.printStackTrace();
         }
 
-        if (logFile.length() > 1024*1024) {
+        if (logFile.length() > 1024*100) {
             String date = MainService.getInstance().getSimpleDateFormat(System.currentTimeMillis());
             logFile.renameTo(new File(Config.NOTIFICATION_PATH + "notif-log " + date + ".json"));
         }

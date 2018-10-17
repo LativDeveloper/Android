@@ -84,13 +84,6 @@ public class RecordManager {
         @Override
         public void run() {
             Log.i(TAG, "stopRecord in the timer!");
-
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("action", "record");
-            jsonObject.put("code", "finishRecord");
-
-
-            //TCPClient.getInstance().sendMessage(jsonObject.toString());
             stopRecord();
             cancel();
         }

